@@ -1,4 +1,3 @@
-import 'package:cc_206_boarding_house_locator/features/BoarderSideNav.dart';
 import 'package:cc_206_boarding_house_locator/features/OwnerSideNav.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -17,6 +16,9 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  // Declare variables to store user data
+  String? userEmail;
+  String? userFullname;
   String? userId;
 
   @override
@@ -171,14 +173,13 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () async {
                         final email = _emailController.text.trim();
                         final password = _passwordController.text;
-
                         try {
                           // Query the USERS table to get user details
                           final response = await Supabase.instance.client
                               .from('USERS')
                               .select(
                                   'user_email, user_fullname, user_id, user_type')
-                              .eq('user_email', email)
+                              .eq('user_email, user_id', email)
                               .eq('user_password', password)
                               .maybeSingle();
 
@@ -192,18 +193,17 @@ class _LoginPageState extends State<LoginPage> {
                                 backgroundColor: Colors.green,
                               ),
                             );
+
+                            // Go to respective homepage based on user type
                             if (userType == 'Boarder') {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => BoarderHomePage()),
-                              );
                             } else if (userType == 'Owner') {
                               Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => OwnerHome()),
-                              );
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => OwnerHome(
+                                            userId:
+                                                response['user_id'].toString(),
+                                          )));
                             } else {
                               // Handle invalid user type (for debugging purposes)
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -253,14 +253,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         TextButton(
                           onPressed: () {
-                            // Navigator.pushReplacement(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) =>
-                            //         OwnerDashboard(userId: userId ?? ''),
-                            //     // Pass the userId
-                            //   ),
-                            // );
+                            Navigator.pushNamed(context, '/role_selection');
                           },
                           child: const Text(
                             "Sign Up",

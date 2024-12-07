@@ -652,8 +652,7 @@ class _OwnerHomeTabState extends State<OwnerHomeTab> {
                                                                 .showSnackBar(
                                                               SnackBar(
                                                                 content: Text(
-                                                                    emailController
-                                                                        .text),
+                                                                    "Please enter a valid email!"),
                                                                 backgroundColor:
                                                                     Colors.red,
                                                               ),
