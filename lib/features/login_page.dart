@@ -1,6 +1,5 @@
 import 'package:cc_206_boarding_house_locator/features/BoarderSideNav.dart';
-// import 'package:cc_206_boarding_house_locator/features/Ownerhomepage(placeholder).dart';
-import 'package:cc_206_boarding_house_locator/features/role_selection_page.dart';
+import 'package:cc_206_boarding_house_locator/features/OwnerSideNav.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,6 +16,8 @@ class _LoginPageState extends State<LoginPage> {
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  String? userId;
 
   @override
   Widget build(BuildContext context) {
@@ -63,19 +64,19 @@ class _LoginPageState extends State<LoginPage> {
                               prefixIcon:
                                   const Icon(Icons.email, color: Colors.green),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8.0),
                                 borderSide:
                                     const BorderSide(color: Colors.grey),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderSide: const BorderSide(
                                     color: Colors.grey, width: 1.5),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8.0),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderSide: const BorderSide(
-                                    color: Colors.green, width: 2),
-                                borderRadius: BorderRadius.circular(8),
+                                    color: Colors.green, width: 2.0),
+                                borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
                             keyboardType: TextInputType.emailAddress,
@@ -108,19 +109,19 @@ class _LoginPageState extends State<LoginPage> {
                                 },
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8.0),
                                 borderSide:
                                     const BorderSide(color: Colors.grey),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderSide: const BorderSide(
                                     color: Colors.grey, width: 1.5),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8.0),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderSide: const BorderSide(
-                                    color: Colors.green, width: 2),
-                                borderRadius: BorderRadius.circular(8),
+                                    color: Colors.green, width: 2.0),
+                                borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
                             keyboardType: TextInputType.visiblePassword,
@@ -150,7 +151,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -172,32 +173,25 @@ class _LoginPageState extends State<LoginPage> {
                         final password = _passwordController.text;
 
                         try {
-                          // sign in with email and password
-                          final response = await Supabase.instance.client.auth
-                              .signInWithPassword(
-                            email: email,
-                            password: password,
-                          );
+                          // Query the USERS table to get user details
+                          final response = await Supabase.instance.client
+                              .from('USERS')
+                              .select(
+                                  'user_email, user_fullname, user_id, user_type')
+                              .eq('user_email', email)
+                              .eq('user_password', password)
+                              .maybeSingle();
 
-                          // checkif login was successful
-                          if (response.session != null) {
-                            final userTypeResponse = await Supabase
-                                .instance.client
-                                .from('USERS')
-                                .select('user_type')
-                                .eq('user_email', email)
-                                .single();
+                          if (response != null) {
+                            userId = response['user_id'];
 
-                            final userType = userTypeResponse['user_type'];
-
+                            final userType = response['user_type'];
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Login successful!'),
                                 backgroundColor: Colors.green,
                               ),
                             );
-
-                            // go to the respective homepage based on user type
                             if (userType == 'Boarder') {
                               Navigator.pushReplacement(
                                 context,
@@ -205,12 +199,13 @@ class _LoginPageState extends State<LoginPage> {
                                     builder: (context) => BoarderHomePage()),
                               );
                             } else if (userType == 'Owner') {
-                              // Navigator.pushReplacement(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //       builder: (context) => OwnerHomePage()),
-                              // );
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => OwnerHome()),
+                              );
                             } else {
+                              // Handle invalid user type (for debugging purposes)
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
@@ -220,6 +215,7 @@ class _LoginPageState extends State<LoginPage> {
                               );
                             }
                           } else {
+                            // Invalid credentials (invalid email or password)
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
@@ -229,25 +225,13 @@ class _LoginPageState extends State<LoginPage> {
                             );
                           }
                         } catch (e) {
-                          final error = e.toString().toLowerCase();
-                          if (error.contains('invalid login credentials')) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'Invalid email or password. Please try again.'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          } else {
-                            // general error message
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'An unexpected error occurred. Please try again later.'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
+                          // Handle errors during the login process
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: ${e.toString()}'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
                         }
                       },
                       child: const Text(
@@ -269,12 +253,14 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => RoleSelectionPage(),
-                              ),
-                            );
+                            // Navigator.pushReplacement(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) =>
+                            //         OwnerDashboard(userId: userId ?? ''),
+                            //     // Pass the userId
+                            //   ),
+                            // );
                           },
                           child: const Text(
                             "Sign Up",
