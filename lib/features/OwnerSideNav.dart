@@ -1,4 +1,5 @@
-import 'package:cc_206_boarding_house_locator/features/OwnerSideTabs/OwnerSideTabs/home_tab.dart';
+import 'package:cc_206_boarding_house_locator/features/OwnerSideTabs/home_tab.dart';
+import 'package:cc_206_boarding_house_locator/features/OwnerSideTabs/profile_tab.dart';
 import 'package:flutter/material.dart';
 
 class OwnerHome extends StatefulWidget {
@@ -21,6 +22,9 @@ class _OwnerHomeState extends State<OwnerHome> {
     userId = widget.userId;
     _boarderScreens = [
       OwnerHomeTab(userId: userId),
+      ProfileTab(
+        userId: userId,
+      ),
     ];
   }
 

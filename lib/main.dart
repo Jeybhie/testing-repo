@@ -39,7 +39,6 @@ class MainApp extends StatelessWidget {
             ),
         '/login': (context) => const LoginPage(),
         '/boarderHome': (context) => BoarderHomePage(),
-        // '/ownerHome': (context) => OwnerHomePage(),
         '/bhdetails': (context) {
           final args = ModalRoute.of(context)!.settings.arguments
               as Map<String, dynamic>;
